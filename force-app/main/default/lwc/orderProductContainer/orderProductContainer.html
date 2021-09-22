@@ -1,0 +1,19 @@
+<template>
+    <lightning-card  title="Order Products">
+        <lightning-button 
+        variant="brand" 
+        label="Activate" 
+        title="Primary action" 
+        onclick={activate} 
+        class="slds-m-left_x-small"
+        disabled={disabled}>
+        </lightning-button>
+
+        <c-available-Product-Table 
+        products-show={products}
+        original-data={products} 
+        onupsert={handleUpsert} 
+        columns={columns}
+        ></c-available-Product-Table>
+    </lightning-card>
+</template>

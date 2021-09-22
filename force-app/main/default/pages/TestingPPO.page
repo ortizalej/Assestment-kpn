@@ -1,0 +1,17 @@
+<apex:page >       
+    <script src="https://yourExperienceDomain/ExperienceURL/lightning/lightning.out.js"></script>
+    <apex:includeLightning />
+    <div id="Con" />
+    <script>
+        $Lightning.use("c:ExcelImportApp", function() {
+            $Lightning.createComponent(
+                "c:ExcelImport",
+                {},
+                "Con",
+                function(cmp) {
+                    console.log("Component is created!");
+                    console.log(cmp);
+                });
+            });        
+      </script>
+</apex:page>

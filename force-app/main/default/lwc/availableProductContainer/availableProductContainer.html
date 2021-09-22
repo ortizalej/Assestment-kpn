@@ -1,0 +1,9 @@
+<template>    
+    <lightning-card  title="Available Products">
+        <c-available-Product-Table 
+        products-show={products}
+        original-data={products} 
+        onaction={handleUpsert} 
+        columns={columns}></c-available-Product-Table>
+    </lightning-card>
+</template>

@@ -1,0 +1,19 @@
+<template>
+    <c-search-Bar search-data={originalData} onsearch={handleSearch}></c-search-Bar>
+
+    <div style="height: 300px;">
+        
+        <lightning-datatable
+                key-field="id"
+                data={productsShow}
+                sorted-by={sortBy}
+                sorted-direction={sortDirection}
+                onsort={doSorting}
+                onrowselection={handleRowSelect}
+                hide-checkbox-column="true"
+                columns={columns}
+                onrowaction={handleRowAction}
+                >
+        </lightning-datatable>
+    </div>   
+</template>

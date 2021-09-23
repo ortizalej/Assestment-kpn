@@ -78,4 +78,3 @@ public class AvailableProductController {
         public Boolean isCreated;
     }
 }
-

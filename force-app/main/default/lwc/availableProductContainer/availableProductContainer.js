@@ -8,8 +8,8 @@ export default class AvailableProductContainer extends LightningElement {
     @track products;
     @track error;
     @track order;
-    @track disabled
-
+    @track disabled;
+    @track isLoading;
     @api recordId;
     @track columns = [
         { label: 'Name', fieldName: 'Name', sortable: true },
@@ -37,28 +37,27 @@ export default class AvailableProductContainer extends LightningElement {
             } else {
                 this.columns[2].typeAttributes.disabled = false;
             }
-            this.processRelatedObjects();
             this.connectedCallback();
         } else if (error) {
             console.error('ERROR => ', JSON.stringify(error)); // handle error properly
         }
     }
-    processRelatedObjects() {
-        console.log('processRelatedObjects for => ', JSON.stringify(this.order));
-        console.log('ORDER', this.order.fields.Status.value)
-        // further processing like refreshApex or calling another wire service
-    }
     connectedCallback() {
+        this.isLoading = true;
         getProducts({ orderId: this.recordId })
             .then(result => {
+                
                 this.products = result;
                 console.log('PRODUCTS', this.products);
+                this.isLoading = false;
             })
             .catch(error => {
+                this.isLoading = false;
                 console.log('errror ', error)
             })
     }
     handleUpsert(event) {
+        this.isLoading = true;
         upsertProduct({ priceBookEntryId: event.detail, orderId: this.recordId })
             .then(result => {
                 const evt = new ShowToastEvent({
@@ -68,6 +67,8 @@ export default class AvailableProductContainer extends LightningElement {
                 });
                 this.dispatchEvent(evt);
                 updateRecord({ fields: { Id: this.recordId } });
+                this.isLoading = false;
+
             })
             .catch(error => {
                 console.log('errror ', error)
@@ -77,6 +78,8 @@ export default class AvailableProductContainer extends LightningElement {
                     variant: 'Error',
                 });
                 this.dispatchEvent(evt);
+                this.isLoading = false;
+
 
             })
     }

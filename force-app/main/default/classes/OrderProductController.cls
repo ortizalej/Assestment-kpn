@@ -14,7 +14,6 @@ public class OrderProductController {
                     )
                 );
             }
-            System.debug(response);
             return JSON.serialize(response);
             
         } catch (Exception e) {
@@ -24,18 +23,49 @@ public class OrderProductController {
     @AuraEnabled
     public static String activateOrder(String orderId){
         try {
-            Order order = [SELECT id, Status FROM Order WHERE id =: orderId];        
+            Order order = [
+                SELECT id, Status, AccountId,Account.AccountNumber, OrderNumber, Type,
+                 (SELECT id, UnitPrice, Quantity, Product2.Name, Product2.ProductCode FROM OrderItems) 
+                FROM Order 
+                WHERE id =: orderId
+            ];        
 
-            order.Status = 'Activated';
-            System.debug(order);
             RepsonseActivated resp = new RepsonseActivated();
-            Database.UpsertResult result = Database.upsert(order);
-            if(result.isSuccess()) {
-                resp.message = 'Success';
-                resp.hasError = false;
-                return JSON.Serialize(resp);
+            List<OrderRest.OrderItemRequest> orderItems = new List<OrderRest.OrderItemRequest>();
+            OrderRest.OrderRequest orderRequest = new OrderRest.OrderRequest();
+            for(OrderItem item : Order.OrderItems){
+                OrderRest.OrderItemRequest  itemRequest = new OrderRest.OrderItemRequest();
+                itemRequest.name = item.Product2.Name;
+                itemRequest.code = item.Product2.ProductCode;
+                itemRequest.unitPrice = item.UnitPrice;
+                itemRequest.quantity = Integer.Valueof(item.Quantity);
+                orderItems.add(itemRequest); 
+            }
+
+            orderRequest.accountNumber = order.Account.AccountNumber;
+            orderRequest.orderNumber = order.OrderNumber;
+            orderRequest.type = order.Type;
+            orderRequest.Status = order.status;
+            orderRequest.orderProducts = orderItems;
+            Boolean success = OrderRest.sentOrderToExternalSystem(orderRequest);
+
+            if(success) {
+                order.Status = 'Activated';
+
+                Database.UpsertResult result = Database.upsert(order);
+
+                if(result.isSuccess()) {
+                    resp.message = 'Success';
+                    resp.hasError = false;
+                    return JSON.Serialize(resp);
+
+                } else {
+                    resp.message = result.getErrors()[0].getMessage();
+                    resp.hasError = true;
+                    return JSON.Serialize(resp);
+                }
             } else {
-                resp.message = result.getErrors()[0].getMessage();
+                resp.message = 'Error';
                 resp.hasError = true;
                 return JSON.Serialize(resp);
             }
@@ -43,6 +73,8 @@ public class OrderProductController {
             throw new AuraHandledException(e.getMessage());
         }
     }
+
+
 
     public class RepsonseActivated {
         public String message;

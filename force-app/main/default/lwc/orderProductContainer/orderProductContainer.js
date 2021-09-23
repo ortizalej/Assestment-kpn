@@ -10,6 +10,7 @@ export default class OrderProductContainer extends LightningElement {
     @track error;
     @api recordId;
     @track disabled;
+    @track isLoading;
     @track order;
     @track columns = [
         { label: 'Name', fieldName: 'Name',sortable: "true" },
@@ -27,28 +28,27 @@ export default class OrderProductContainer extends LightningElement {
             } else {
                 this.disabled = false;
             }
-            this.processRelatedObjects();
             this.connectedCallback();
         } else if (error) {
             console.error('ERROR => ', JSON.stringify(error)); // handle error properly
         }
     }
-    processRelatedObjects() {
-        console.log('processRelatedObjects for => ', JSON.stringify(this.order));
-        // further processing like refreshApex or calling another wire service
-    }
     connectedCallback() {
+        this.isLoading = true;
         getOrderItem({ orderId: this.recordId })
             .then(result => {
                 let resultProduct = JSON.parse(result)
                 this.products = resultProduct;
+                this.isLoading = false;
             })
             .catch(error => {
+                this.isLoading = false;
                 console.log('errror ', error)
             })
     }
 
     activate() {
+        this.isLoading = true;
         activateOrder({ orderId: this.recordId })
             .then(result => {
                 let response = JSON.parse(result);
@@ -59,6 +59,8 @@ export default class OrderProductContainer extends LightningElement {
                 });
                 this.dispatchEvent(evt);
                 updateRecord({ fields: { Id: this.recordId } });
+                this.isLoading = false;
+
 
             })
             .catch(error => {
@@ -69,6 +71,7 @@ export default class OrderProductContainer extends LightningElement {
                     message: 'Error',
                     variant: 'Error',
                 });
+                this.isLoading = false;
                 this.dispatchEvent(evt);
             })
     }

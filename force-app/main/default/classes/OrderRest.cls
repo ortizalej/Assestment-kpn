@@ -4,7 +4,6 @@ public  class OrderRest {
         HttpResponse res = new HttpResponse();
         Http http = new Http();
         
-        System.debug('REQUEST'+JSON.serialize(request));
         req.setEndpoint('https://kpn-assestment.requestcatcher.com/test');
         req.setMethod('POST');
         req.setHeader('content-type', 'application/json');
